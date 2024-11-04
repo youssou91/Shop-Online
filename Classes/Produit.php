@@ -11,15 +11,13 @@ class Produit {
     private $couleurs_prod;
     
     // Constructeur
-    public function __construct($nom, $prix_unitaire, $description, $courte_description, $quantite, $id_categorie, $taille_produit, $sexe_prod, $couleurs_prod) {
+    public function __construct($nom, $prix_unitaire, $description, $courte_description, $quantite, $id_categorie, $couleurs_prod) {
         $this->nom = $nom;
         $this->prix_unitaire = $prix_unitaire;
         $this->description = $description;
         $this->courte_description = $courte_description;
         $this->quantite = $quantite;
         $this->id_categorie = $id_categorie;
-        $this->taille_produit = $taille_produit;
-        $this->sexe_prod = $sexe_prod;
         $this->couleurs_prod = $couleurs_prod;
     }
 
