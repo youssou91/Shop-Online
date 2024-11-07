@@ -1,91 +1,92 @@
 <?php
 include '../Classes/Produit.php';
+
 class ProduitModel {
     private $conn;
 
-    public function __construct(PDO $conn) 
-    {
+    public function __construct(PDO $conn) {
         $this->conn = $conn;
     }
 
-    public function getAllProduits() 
-    {
+    public function getAllProduits() {
         $sql = "SELECT p.*, i.chemin_image FROM produits p LEFT JOIN image i ON p.id_produit = i.id_produit";
         try {
             $query = $this->conn->prepare($sql);
             $query->execute();
+            $produits = [];  // Initialise un tableau vide pour stocker les produits
             while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
-                $produit[] = new Produit(
-                    $row['id_produit'] ,
+                $produits[] = new Produit(
                     $row['nom'], 
                     $row['prix_unitaire'], 
                     $row['description'], 
                     $row['courte_description'], 
                     $row['quantite'], 
                     $row['id_categorie'], 
-                    $row['couleurs_prod'], 
+                    explode(", ", $row['couleurs_prod'])  // Transforme la chaîne de couleurs en tableau
                 );
             }
-            return $produit;
+            return $produits;
         } catch (PDOException $e) {
-            echo "Erreur : ". $e->getMessage();
+            echo "Erreur : " . $e->getMessage();
         }
     }
 
-    public function getProduitById($id) {
-        $sql = "SELECT * FROM produits WHERE id_produit = :id";
-        $query = $this->conn->prepare($sql);
-        $query->execute();
-        return $query->fetch(PDO::FETCH_ASSOC);
+    public function ajoutProduit($produit, $data) {
+        try {
+            // Requête d'insertion dans la table "produits"
+            $sql = "INSERT INTO produits (nom, prix_unitaire, description, courte_description, quantite, id_categorie, couleurs_prod) 
+                    VALUES (:nom, :prix, :description, :courte_description, :quantite, :id_categorie, :couleurs_prod)";
+            
+            $query = $this->conn->prepare($sql);
+            $couleurs_prod = implode(", ", $produit['couleurs_prod']);
+
+            $resultat = $query->execute([
+                ':nom' => $produit['nom'],
+                ':prix' => $produit['prix_unitaire'],
+                ':description' => $produit['description'],
+                ':courte_description' => $produit['courte_description'],
+                ':quantite' => $produit['quantite'],
+                ':id_categorie' => $produit['id_categorie'],
+                ':couleurs_prod' => $couleurs_prod,
+            ]);
+
+            if ($resultat) {
+                $id_produit = $this->conn->lastInsertId();
+                return $this->uploadImage($data, $id_produit);
+            }
+            return false;
+
+        } catch (PDOException $e) {
+            echo 'Erreur : ' . $e->getMessage();
+            return false;
+        }
     }
 
-    // public function ajoutProduit($produit, $data) {
-    //     $sql = "INSERT INTO produits (nom, prix_unitaire, description, courte_description, quantite, id_categorie, taille_produit, sexe_prod, couleurs_prod) VALUES (:nom, :prix, :description, :courte_description, :quantite, :id_categorie, :taille_produit, :sexe_prod, :couleurs_prod)";
-        
-    //     $query = $this->conn->prepare($sql);
-    //     $query->bindParam(':nom', $produit['nom_prod']);
-    //     $query->bindParam(':prix', $produit['prix_prod']);
-    //     $query->bindParam(':description', $produit['longueDescription_prod']);
-    //     $query->bindParam(':courte_description', $produit['courteDescription_prod']);
-    //     $query->bindParam(':quantite', $produit['quantite_prod']);
-    //     $query->bindParam(':id_categorie', $produit['id_categorie']);
-    //     $query->bindParam(':taille_produit', $produit['taille_produit']);
-    //     $query->bindParam(':sexe_prod', $produit['sexe_prod']);
-    //     $couleurs_prod = implode(", ", $produit['couleurs_prod']);
-    //     $query->bindParam(':couleurs_prod', $couleurs_prod);
+    private function uploadImage($data, $id_produit) {
+        if (isset($data['image']) && $data['image']['error'] === UPLOAD_ERR_OK) {
+            $image_name = $data['image']['name'];
+            $image_destination = 'images/' . basename($image_name);
+            $from = $data['image']['tmp_name'];
+            $image_type = strtolower(pathinfo($image_destination, PATHINFO_EXTENSION));
 
-    //     $resultat = $query->execute();
+            if (in_array($image_type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                if (move_uploaded_file($from, $image_destination)) {
+                    return $this->ajoutImage(['chemin_image' => $image_destination, 'id_produit' => $id_produit]);
+                }
+            }
+        }
+        return false;
+    }
 
-    //     if ($resultat) {
-    //         $id_produit = $this->conn->lastInsertId();
-    //         return $this->uploadImage($data, $id_produit);
-    //     }
-    //     return false;
-    // }
-
-    // private function uploadImage($data, $id_produit) {
-    //     if (isset($data['image']) && $data['image']['error'] === UPLOAD_ERR_OK) {
-    //         $image_name = $data['image']['name'];
-    //         $image_destination = 'images/' . basename($image_name);
-    //         $from = $data['image']['tmp_name'];
-    //         $image_type = strtolower(pathinfo($image_destination, PATHINFO_EXTENSION));
-
-    //         if (in_array($image_type, ['jpg', 'jpeg', 'png', 'gif'])) {
-    //             if (move_uploaded_file($from, $image_destination)) {
-    //                 return $this->ajoutImage(['chemin_image' => $image_destination, 'id_produit' => $id_produit]);
-    //             }
-    //         }
-    //     }
-    //     return false;
-    // }
-
-    // private function ajoutImage($image) {
-    //     $sql = "INSERT INTO image (chemin_image, id_produit) VALUES (:chemin_image, :id_produit)";
-    //     $query = $this->conn->prepare($sql);
-    //     $query->bindParam(':chemin_image', $image['chemin_image']);
-    //     $query->bindParam(':id_produit', $image['id_produit']);
-    //     return $query->execute();
-    // }
+    private function ajoutImage($image) {
+        $sql = "INSERT INTO image (chemin_image, id_produit) VALUES (:chemin_image, :id_produit)";
+        $query = $this->conn->prepare($sql);
+        return $query->execute([
+            ':chemin_image' => $image['chemin_image'],
+            ':id_produit' => $image['id_produit']
+        ]);
+    }
+}
 
     // public function updateProduit($produit) {
     //     $sql = "UPDATE produits SET nom = :nom, prix_unitaire = :prix_unitaire, description = :description, courte_description = :courte_description, quantite = :quantite WHERE id_produit = :id";
@@ -122,4 +123,4 @@ class ProduitModel {
     //     $query->bindParam(':id', $idProduit);
     //     return $query->execute();
     // }
-}
+

@@ -29,6 +29,7 @@ class Produit {
     public function getPrixUnitaire() {
         return $this->prix_unitaire;
     }
+    
 
     public function getDescription() {
         return $this->description;

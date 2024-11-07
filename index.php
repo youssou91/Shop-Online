@@ -1,6 +1,5 @@
 <?php
 session_start(); // Assurez-vous de démarrer la session au début
-
 // Connexion à la base de données avec PDO
 try {
     $connect = new PDO('mysql:host=localhost;dbname=cours343', 'root', '');
@@ -8,14 +7,12 @@ try {
 } catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }
-
 // Ajouter des produits au panier
 if (isset($_POST['add'])) {
     $idProduit = $_GET['id'];
     $nomProduit = $_POST['nom'];
     $prixUnitaire = (float) $_POST['prix_unitaire'];
     $quantite = (int) $_POST['quantite'];
-
     if (isset($_SESSION['cart'])) {
         $item_array_id = array_column($_SESSION['cart'], "id_produit");
         if (in_array($idProduit, $item_array_id)) {
@@ -23,7 +20,6 @@ if (isset($_POST['add'])) {
             foreach ($_SESSION['cart'] as $key => $value) {
                 if ($value['id_produit'] == $idProduit) {
                     $nouvelleQuantite = $value['quantite'] + $quantite;
-
                     // Vérifier la disponibilité en stock
                     $query = "SELECT quantite FROM Produits WHERE id_produit = :idProduit";
                     $stmt = $connect->prepare($query);
@@ -61,13 +57,11 @@ if (isset($_POST['add'])) {
     }
     echo '<script>window.location="index.php"</script>';
 }
-
 // Vider le panier
 if (isset($_POST['empty_cart'])) {
     unset($_SESSION['cart']);
     echo '<script>window.location="index.php"</script>';
 }
-
 // Supprimer un produit du panier
 // Vérifier si la requête est un POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -80,23 +74,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['cart'][$idProduit]['quantite'] = $quantite;
         }
     }
-
     // Si le bouton "Retirer" a été cliqué
     if (isset($_POST['remove'])) {
         $idProduit = $_POST['id_produit'];
         // Retirer le produit du panier
         unset($_SESSION['cart'][$idProduit]);
     }
-
     // Si le bouton "Vider le panier" a été cliqué
     if (isset($_POST['empty_cart'])) {
         // Vider le panier
         unset($_SESSION['cart']);
     }
 }
-
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -107,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> <!-- Inclure Tailwind CSS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-
 <body class="bg-gray-200 m-5">
     <!-- <div class="container m-5"> -->
         <div class="container mx-auto">
@@ -184,7 +173,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $promoType = $row['type'];
                             $promoValeur = $row['valeur'];
                             $prixReduit = $prix;
-
                             // Calcul du prix réduit
                             if ($promoType && $promoValeur) {
                                 $prixReduit = $prix - ($prix * $promoValeur / 100);
@@ -210,7 +198,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ?>
             </div>
         </div>
-    <!-- </div> -->
     <!-- Modal -->
     <div id="productModal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 flex justify-center items-center">
         <div class="bg-white rounded-lg shadow-lg p-4 w-11/12 max-w-md">
@@ -235,7 +222,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $('#modalForm').attr('action', 'index.php?id=' + idProduit);
             $('#productModal').removeClass('hidden');
         }
-
         function closeModal() {
             $('#productModal').addClass('hidden');
         }
