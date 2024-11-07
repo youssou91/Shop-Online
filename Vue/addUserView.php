@@ -1,3 +1,39 @@
+<?php
+// Inclure la configuration et la connexion à la base de données
+require_once '../config.php';
+
+// Créez une instance de connexion à la base de données
+$dbConnection = getConnection(); // Appel de la fonction getConnection() pour obtenir la connexion PDO
+
+// Inclure le contrôleur utilisateur
+require_once '../Controlleur/UserControlleur.php';
+
+// Créez une instance du contrôleur avec la connexion à la base de données
+$userController = new UserController($dbConnection);
+
+// Si le formulaire est soumis
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $user = [
+        'nom_utilisateur' => $_POST['nom_utilisateur'],
+        'prenom' => $_POST['prenom'],
+        'datNaiss' => $_POST['datNaiss'],
+        'couriel' => $_POST['couriel'],
+        'password' => $_POST['password'],
+        'cpassword' => $_POST['cpassword'],
+        'telephone' => $_POST['telephone'],
+        'rue' => $_POST['rue'],
+        'ville' => $_POST['ville'],
+        'code_postal' => $_POST['code_postal'],
+        'pays' => $_POST['pays'],
+        'numero' => $_POST['numero'],
+        'province' => $_POST['province'],
+    ];
+
+    // Appel de la méthode pour enregistrer l'utilisateur
+    $userController->registerUser($user);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
