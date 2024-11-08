@@ -198,33 +198,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ?>
             </div>
         </div>
-    <!-- Modal -->
-    <div id="productModal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 flex justify-center items-center">
-        <div class="bg-white rounded-lg shadow-lg p-4 w-11/12 max-w-md">
-            <h2 id="modalProductName" class="text-xl font-bold mb-4"></h2>
-            <p class="mb-4">Prix: <span id="modalProductPrice" class="font-semibold"></span></p>
-            <form method="post" action="index.php" id="modalForm">
-                <input type="hidden" name="nom" id="modalNom">
-                <input type="hidden" name="prix_unitaire" id="modalPrixUnitaire">
-                <label for="quantite" class="block mb-2">Quantité:</label>
-                <input type="number" name="quantite" id="modalQuantite" value="1" min="1" class="border rounded w-full p-2 mb-4">
-                <button type="submit" name="add" class="bg-blue-500 text-white rounded py-2 w-full">Ajouter au panier</button>
-                <button type="button" onclick="closeModal()" class="mt-4 text-red-500">Fermer</button>
-            </form>
+        <!-- Modal -->
+        <div id="productModal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 flex justify-center items-center">
+            <div class="bg-white rounded-lg shadow-lg p-4 w-11/12 max-w-md">
+                <h2 id="modalProductName" class="text-xl font-bold mb-4"></h2>
+                <p class="mb-4">Prix: <span id="modalProductPrice" class="font-semibold"></span></p>
+                <form method="post" action="index.php" id="modalForm">
+                    <input type="hidden" name="nom" id="modalNom">
+                    <input type="hidden" name="prix_unitaire" id="modalPrixUnitaire">
+                    <label for="quantite" class="block mb-2">Quantité:</label>
+                    <input type="number" name="quantite" id="modalQuantite" value="1" min="1" class="border rounded w-full p-2 mb-4">
+                    <button type="submit" name="add" class="bg-blue-500 text-white rounded py-2 w-full">Ajouter au panier</button>
+                    <button type="button" onclick="closeModal()" class="mt-4 text-red-500">Fermer</button>
+                </form>
+            </div>
         </div>
-    </div>
-    <script>
-        function openModal(nom, prix, idProduit) {
-            $('#modalProductName').text(nom);
-            $('#modalProductPrice').text(prix.toFixed(2) + '$');
-            $('#modalNom').val(nom);
-            $('#modalPrixUnitaire').val(prix);
-            $('#modalForm').attr('action', 'index.php?id=' + idProduit);
-            $('#productModal').removeClass('hidden');
-        }
-        function closeModal() {
-            $('#productModal').addClass('hidden');
-        }
-    </script>
-</body>
+        <script>
+            function openModal(nom, prix, idProduit) {
+                $('#modalProductName').text(nom);
+                $('#modalProductPrice').text(prix.toFixed(2) + '$');
+                $('#modalNom').val(nom);
+                $('#modalPrixUnitaire').val(prix);
+                $('#modalForm').attr('action', 'index.php?id=' + idProduit);
+                $('#productModal').removeClass('hidden');
+            }
+            function closeModal() {
+                $('#productModal').addClass('hidden');
+            }
+        </script>
+    </body>
 </html>

@@ -12,10 +12,10 @@ class UserController {
         $this->userModel = new UserModel($dbConnection);
     }
 
-    // Method to register a new user
+    // Méthode pour enregistrer un nouvel utilisateur
     public function registerUser($user) {
         try {
-            // Validate user data
+            // Valider les données de l'utilisateur
             $this->userModel->validateUserData(
                 $user['couriel'], 
                 $user['password'], 
@@ -23,18 +23,22 @@ class UserController {
                 $user['datNaiss']
             );
 
-            // Add user to the database
+            // Ajouter l'utilisateur dans la base de données
             $result = $this->userModel->addUserDB($user);
 
             if ($result === true) {
-                echo "User successfully added!";
+                // Renvoie un message de succès uniquement
+                return ['success' => true, 'message' => 'L\'utilisateur a été ajouté avec succès !'];
             } else {
-                echo $result; // Display any error message from the model
+                // Retourne l'erreur si l'ajout échoue
+                return ['success' => false, 'message' => $result];
             }
         } catch (Exception $e) {
-            echo "Error: " . $e->getMessage();
+            // Gérer les exceptions
+            return ['success' => false, 'message' => 'Erreur : ' . $e->getMessage()];
         }
     }
+
 
     // Method to fetch all users
     public function getAllUsers() {

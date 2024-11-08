@@ -7,131 +7,150 @@ class UserModel {
         $this->conn = $conn;
     }
 
-    // Function to add user to the DB
+    // Fonction pour ajouter un utilisateur à la base de données
     public function addUserDB($user) {
-        // Start a transaction
+        // Démarrer une transaction
         $this->conn->beginTransaction();
 
         try {
-            // Insert user, address, and associate them
+            // Insérer l'utilisateur, l'adresse, et les associer
             $id_utilisateur = $this->insertUser($user);
             $id_adresse = $this->insertAddress($user);
             $this->associateUserAddress($id_utilisateur, $id_adresse);
             $this->assignUserRole($id_utilisateur, 'client');
 
-            // Commit the transaction
+            // Commit de la transaction
             $this->conn->commit();
-            return true;
+            return "L'utilisateur a été ajouté avec succès.";
         } catch (Exception $e) {
-            // Rollback if an error occurs
+            // Rollback si une erreur se produit
             $this->conn->rollBack();
-            return "Error adding user: " . $e->getMessage();
+            return "Erreur lors de l'ajout de l'utilisateur : " . $e->getMessage();
         }
     }
 
-    // Insert user into the user table
+    // Insérer l'utilisateur dans la table des utilisateurs
     private function insertUser($user) {
-        // Prepare the user data
         $sql = "INSERT INTO utilisateur (nom_utilisateur, prenom, date_naissance, couriel, mot_de_pass, telephone, statut) 
                 VALUES (:nom_utilisateur, :prenom, :datNaiss, :couriel, :password, :telephone, :statut)";
         
         $stmt = $this->conn->prepare($sql);
         
-        // Hash the password
+        // Hash du mot de passe
         $passwordHash = password_hash($user['password'], PASSWORD_DEFAULT);
 
-        $stmt->execute([
-            ':nom_utilisateur' => $user['nom_utilisateur'],
-            ':prenom' => $user['prenom'],
-            ':datNaiss' => $user['datNaiss'],
-            ':couriel' => $user['couriel'],
-            ':password' => $passwordHash,
-            ':telephone' => $user['telephone'],
-            ':statut' => 'actif'
-        ]);
-
-        return $this->conn->lastInsertId();
+        try {
+            $stmt->execute([
+                ':nom_utilisateur' => $user['nom_utilisateur'],
+                ':prenom' => $user['prenom'],
+                ':datNaiss' => $user['datNaiss'],
+                ':couriel' => $user['couriel'],
+                ':password' => $passwordHash,
+                ':telephone' => $user['telephone'],
+                ':statut' => 'actif'
+            ]);
+            return $this->conn->lastInsertId();
+        } catch (Exception $e) {
+            throw new Exception("Erreur lors de l'insertion de l'utilisateur : " . $e->getMessage());
+        }
     }
 
-    // Insert address into the address table
+    // Insérer l'adresse dans la table des adresses
     private function insertAddress($user) {
         $sql = "INSERT INTO adresse (rue, ville, code_postal, pays, numero, province) 
                 VALUES (:rue, :ville, :code_postal, :pays, :numero, :province)";
         
         $stmt = $this->conn->prepare($sql);
         
-        $stmt->execute([
-            ':rue' => $user['rue'],
-            ':ville' => $user['ville'],
-            ':code_postal' => $user['code_postal'],
-            ':pays' => $user['pays'],
-            ':numero' => $user['numero'],
-            ':province' => $user['province']
-        ]);
-
-        return $this->conn->lastInsertId();
+        try {
+            $stmt->execute([
+                ':rue' => $user['rue'],
+                ':ville' => $user['ville'],
+                ':code_postal' => $user['code_postal'],
+                ':pays' => $user['pays'],
+                ':numero' => $user['numero'],
+                ':province' => $user['province']
+            ]);
+            return $this->conn->lastInsertId();
+        } catch (Exception $e) {
+            throw new Exception("Erreur lors de l'insertion de l'adresse : " . $e->getMessage());
+        }
     }
 
-    // Associate user with address in the association table
+    // Associer l'utilisateur à l'adresse dans la table d'association
     private function associateUserAddress($id_utilisateur, $id_adresse) {
         $sql = "INSERT INTO utilisateur_adresse (id_utilisateur, id_adresse) 
                 VALUES (:id_utilisateur, :id_adresse)";
         
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([
-            ':id_utilisateur' => $id_utilisateur,
-            ':id_adresse' => $id_adresse
-        ]);
+
+        try {
+            $stmt->execute([
+                ':id_utilisateur' => $id_utilisateur,
+                ':id_adresse' => $id_adresse
+            ]);
+        } catch (Exception $e) {
+            throw new Exception("Erreur lors de l'association utilisateur-adresse : " . $e->getMessage());
+        }
     }
 
-    // Assign a role to the user
+    // Assigner un rôle à l'utilisateur
     private function assignUserRole($id_utilisateur, $role_description) {
-        $role = $this->getRoleByDescription($role_description);
+        try {
+            $role = $this->getRoleByDescription($role_description);
 
-        $sql = "INSERT INTO role_utilisateur (id_role, id_utilisateur) 
-                VALUES (:id_role, :id_utilisateur)";
-        
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute([
-            ':id_role' => $role['id_role'],
-            ':id_utilisateur' => $id_utilisateur
-        ]);
+            $sql = "INSERT INTO role_utilisateur (id_role, id_utilisateur) 
+                    VALUES (:id_role, :id_utilisateur)";
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                ':id_role' => $role['id_role'],
+                ':id_utilisateur' => $id_utilisateur
+            ]);
+        } catch (Exception $e) {
+            throw new Exception("Erreur lors de l'assignation du rôle à l'utilisateur : " . $e->getMessage());
+        }
     }
 
-    // Fetch role based on description
+    // Récupérer un rôle par description
     private function getRoleByDescription($role_description) {
         $sql = "SELECT * FROM role WHERE description = :description";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':description' => $role_description]);
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $role = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$role) {
+            throw new Exception("Rôle non trouvé : " . $role_description);
+        }
+
+        return $role;
     }
 
-    // Validate user data (Email, Password, etc.)
+    // Valider les données de l'utilisateur (Email, Mot de passe, etc.)
     public function validateUserData($email, $password, $cpassword, $birthDate) {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new Exception("Email format is invalid.");
+            throw new Exception("Le format de l'email est invalide.");
         }
 
         if ($this->getElementByEmailForAddUser($email)) {
-            throw new Exception("Email already exists in the database.");
+            throw new Exception("L'email existe déjà dans la base de données.");
         }
 
-        // Password validation
+        // Validation du mot de passe
         if (strlen($password) < 6 || !preg_match('/[a-z]/', $password) || !preg_match('/[A-Z]/', $password) || !preg_match('/\d/', $password) || !preg_match('/[@$!%*?&]/', $password)) {
-            throw new Exception("Password must contain at least 6 characters, one lowercase letter, one uppercase letter, one digit, and one special character.");
+            throw new Exception("Le mot de passe doit contenir au moins 6 caractères, une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.");
         }
 
         if ($password !== $cpassword) {
-            throw new Exception("Passwords do not match.");
+            throw new Exception("Les mots de passe ne correspondent pas.");
         }
 
         if ($this->calculateAge($birthDate) < 16) {
-            throw new Exception("User must be at least 16 years old.");
+            throw new Exception("L'utilisateur doit avoir au moins 16 ans.");
         }
     }
 
-    // Get user by email for registration validation
+    // Vérifier si l'email existe déjà dans la base de données
     private function getElementByEmailForAddUser($email) {
         $sql = "SELECT * FROM utilisateur WHERE couriel = :couriel";
         $stmt = $this->conn->prepare($sql);
@@ -140,24 +159,33 @@ class UserModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Calculate age based on birthdate
+    // Calculer l'âge à partir de la date de naissance
     private function calculateAge($birthDate) {
         $birthDate = new DateTime($birthDate);
         $today = new DateTime();
         $age = $today->diff($birthDate);
+        
+        if ($age->y < 16) {
+            throw new Exception("L'utilisateur doit avoir au moins 16 ans.");
+        }
+
         return $age->y;
     }
     
-    // Fetch all users with their roles
+    // Récupérer tous les utilisateurs avec leurs rôles
     public function getAllUsers() {
-        $sql = "SELECT u.*, r.description as role 
-                FROM utilisateur u 
-                JOIN role_utilisateur ru ON u.id_utilisateur = ru.id_utilisateur 
-                JOIN role r ON ru.id_role = r.id_role";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
+        try {
+            $sql = "SELECT u.*, r.description as role 
+                    FROM utilisateur u 
+                    JOIN role_utilisateur ru ON u.id_utilisateur = ru.id_utilisateur 
+                    JOIN role r ON ru.id_role = r.id_role";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            throw new Exception("Erreur lors de la récupération des utilisateurs : " . $e->getMessage());
+        }
     }
 
     // Get user information by ID
@@ -173,31 +201,27 @@ class UserModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Check user credentials for login
+    // Récupérer un utilisateur par email pour la connexion
+    public function getElementByEmailForLogin($email) {
+        $query = 'SELECT * FROM utilisateur WHERE couriel = :email LIMIT 1'; // vérifier que le nom de table et colonne sont corrects
+        $stmt = $this->conn->prepare($query); // Remplacez `$this->db` par `$this->conn`
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC); // Retourner les données de l'utilisateur ou null
+    }
+
+    // Vérifier les informations d'identification de l'utilisateur
     public function checkUser($email, $password) {
-        $user = $this->getElementByEmailForLogin($email);
+        $user = $this->getElementByEmailForLogin($email); // Récupérer l'utilisateur par email
 
         if ($user && password_verify($password, $user['mot_de_pass'])) {
-            return $user;
+            return $user; // L'utilisateur existe et le mot de passe est correct
         } else {
-            return null;
+            return null; // L'utilisateur ou le mot de passe est incorrect
         }
     }
 
-    // Get user by email for login validation
-    private function getElementByEmailForLogin($email) {
-        $sql = "SELECT u.*, r.description as role
-                FROM utilisateur u
-                JOIN role_utilisateur ru ON u.id_utilisateur = ru.id_utilisateur
-                JOIN role r ON ru.id_role = r.id_role
-                WHERE u.couriel = :couriel";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute([':couriel' => $email]);
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-    
-   
 }
 
 ?>

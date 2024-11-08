@@ -1,16 +1,21 @@
 <?php
 // Inclure la configuration et la connexion à la base de données
-require_once '../config.php';
+require_once '../../config.php';
 
 // Créez une instance de connexion à la base de données
 $dbConnection = getConnection(); // Appel de la fonction getConnection() pour obtenir la connexion PDO
 
 // Inclure le contrôleur utilisateur
-require_once '../Controlleur/UserControlleur.php';
+require_once '../../Controlleur/UserControlleur.php';
 
 // Créez une instance du contrôleur avec la connexion à la base de données
 $userController = new UserController($dbConnection);
 
+// Variable pour stocker les messages
+$message = '';
+$messageType = '';
+
+// Si le formulaire est soumis
 // Si le formulaire est soumis
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = [
@@ -29,9 +34,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'province' => $_POST['province'],
     ];
 
-    // Appel de la méthode pour enregistrer l'utilisateur
-    $userController->registerUser($user);
+    // Appeler la méthode d'enregistrement et récupérer la réponse
+    $result = $userController->registerUser($user);
+
+    // Définir le message et le type en fonction du résultat
+    if ($result['success']) {
+        $message = $result['message'];
+        $messageType = 'success';
+    } else {
+        $message = $result['message'];
+        $messageType = 'error';
+    }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -43,14 +58,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 
-<body class="bg-gray-100 py-10">
-    <?php 
-        // include 'header.php'; 
-    ?>
-    
-    <div class="container mx-auto max-w-3xl bg-white p-8 shadow-lg rounded-lg">
-        
+<body class="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 min-h-screen flex items-center justify-center">
+
+    <div class="container mx-auto max-w-3xl bg-white p-8 shadow-lg rounded-lg my-8">
+        <!-- Afficher le message de succès ou d'erreur -->
+        <?php if (!empty($message)): ?>
+            <div class="p-4 mb-4 text-sm font-semibold 
+                        <?php echo $messageType === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'; ?> 
+                        border 
+                        <?php echo $messageType === 'success' ? 'border-green-200' : 'border-red-200'; ?> 
+                        rounded-lg">
+                <?php echo $message; ?>
+            </div>
+        <?php endif; ?>
         <form method="POST" class="space-y-8">
+            <!-- Formulaire de l'utilisateur comme dans votre code initial -->
             <!-- Informations Personnelles -->
             <div class="bg-gray-50 p-6 rounded-lg shadow-md">
                 <h2 class="text-lg font-semibold mb-4 text-blue-500">Informations Personnelles</h2>
@@ -129,9 +151,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </form>
     </div>
-
-    <?php 
-        // include 'footer.php';
-    ?>
 </body>
 </html>
