@@ -1,5 +1,47 @@
 <?php
-session_start(); // Assurez-vous de démarrer la session au début
+include '../MVC/Vue/Head.php';
+// Définition des routes avec les chemins de fichiers correspondants
+$routes = [
+    '/' => __DIR__ . '/index.php',
+    '/contact' => __DIR__ . '/contact.php',
+    '/commandes' => __DIR__ . '/commandesAdmin.php',
+    '/produits' => __DIR__ . '/produits.php',
+    '/utilisateurs' => __DIR__ . '/utilisateurs.php',
+    '/promo' => __DIR__ . '/admin_promotions.php',
+    // '/profil' => __DIR__ . '/Vue/Users/Profile.php',
+    '/profil' => $_SERVER['DOCUMENT_ROOT'] . '/php2/Shop-Online/MVC//Vue/Users/Profile.php',
+
+    '/connexion' => __DIR__ . '/connexion.php',
+    '/deconnexion' => __DIR__ . '/../MVC/Vue/Users/Deconnexion.php'
+];
+
+function estConnecte() {
+    return isset($_SESSION['user_id']); // Vérifiez que la variable de session de l'utilisateur connecté existe
+}
+// Redirection conditionnelle lors de la commande
+if (isset($_POST['commander'])) {
+    if (estConnecte()) {
+        // Redirection vers le profil de l'utilisateur si connecté
+        header("Location: ../MVC/Vue/Users/Profile.php");
+    } else {
+        // Redirection vers la page de connexion si non connecté
+        header("Location: ../MVC/Vue/Users/Connexion.php");
+    }
+    exit;
+}
+// Récupération de l'URI demandée
+$uri = $_SERVER['REQUEST_URI'];
+$uri = parse_url($uri, PHP_URL_PATH); // Supprime les éventuels paramètres de requête
+
+// Vérification si l'URI correspond à une route définie
+if (array_key_exists($uri, $routes)) {
+    require $routes[$uri];
+} else {
+    // Gestion de la page 404 si la route n'existe pas
+    require '../MVC/Vue/404.php';
+}
+/////////////////////////////////////////////////////////////////////////////////
+// session_start(); // Assurez-vous de démarrer la session au début
 // Connexion à la base de données avec PDO
 try {
     $connect = new PDO('mysql:host=localhost;dbname=cours343', 'root', '');
@@ -135,10 +177,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </li>
                         <?php endforeach; ?>
                     </ul>
-                    <div class="mt-4 flex justify-between items-center">
+                    <!-- <div class="mt-4 flex justify-between items-center">
                         <span class="font-bold text-lg">Total: <?= number_format($somme, 2); ?>$</span>
                         <form method="post" action="produit_commande.php">
                             <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Commander</button>
+                        </form>
+                    </div> -->
+                    <div class="mt-4 flex justify-between items-center">
+                        <span class="font-bold text-lg">Total: <?= number_format($somme, 2); ?>$</span>
+                        <!-- Bouton Commander conditionnel avec vérification de connexion -->
+                        <form method="post" action="index.php">
+                            <button type="submit" name="commander" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Commander
+                            </button>
                         </form>
                     </div>
                     <form method="post" action="index.php" class="mt-2">

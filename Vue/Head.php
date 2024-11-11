@@ -23,7 +23,7 @@ session_start();
                 <a class="text-2xl font-bold text-blue-600 hover:text-blue-800 transition duration-300" href="index.php">YAHLI-SHOP</a>
                 
                 <div class="flex items-center space-x-4 sm:space-x-6 md:space-x-12">
-                    <a href="index.php" class="text-lg text-gray-700 hover:text-blue-500 transition duration-300">Accueil</a>
+                    <a href="../../" class="text-lg text-gray-700 hover:text-blue-500 transition duration-300">Accueil</a>
                     <a href="contact.php" class="text-lg text-gray-700 hover:text-blue-500 transition duration-300">Contact</a>
 
                     <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
@@ -34,39 +34,18 @@ session_start();
                     <?php endif; ?>
 
                     <?php if (isset($_SESSION['id_utilisateur'])): ?>
-                        <a href="profile.php" class="text-lg text-gray-700 hover:text-blue-500 transition duration-300">Mon Profil</a>
-                        <a href="deconnexion.php" class="text-lg text-red-600 hover:text-red-800 transition duration-300">
+                        <a href="./Vue/Users/Profile.php" class="text-lg text-gray-700 hover:text-blue-500 transition duration-300">Mon Profil</a>
+                        <a href="./Users/Deconnexion.php" class="text-lg text-red-600 hover:text-red-800 transition duration-300">
                             <i class="bi bi-box-arrow-right"></i> Déconnexion
                         </a>
                     <?php else: ?>
-                        <a href="connexion.php" class="text-lg text-blue-600 hover:text-blue-800 transition duration-300">
+                        <a href="./Vue/Users/Connexion.php" class="text-lg text-blue-600 hover:text-blue-800 transition duration-300">
                             <i class="bi bi-box-arrow-in-right"></i> Connexion
                         </a>
                     <?php endif; ?>
                 </div>
             </nav>
         </header>
-
-        <!-- Carrousel d'images -->
-        <div id="carouselExampleCaptions" class="relative" data-bs-ride="carousel">
-            <ol class="absolute top-0 right-0 left-0 z-10 flex justify-center space-x-3 sm:space-x-6">
-                <li data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active bg-white rounded-full w-2.5 h-2.5"></li>
-                <li data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" class="bg-white rounded-full w-2.5 h-2.5"></li>
-                <li data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" class="bg-white rounded-full w-2.5 h-2.5"></li>
-            </ol>
-            <div class="carousel-inner relative w-full overflow-hidden">
-                <div class="carousel-item active">
-                    <img src="./images/color.jpg" class="d-block w-full h-56 sm:h-72 md:h-[500px] object-cover" alt="Image 1">
-                </div>
-                <div class="carousel-item">
-                    <img src="./images/Media.jpg" class="d-block w-full h-56 sm:h-72 md:h-[500px] object-cover" alt="Image 2">
-                </div>
-                <div class="carousel-item">
-                    <img src="./images/black.jpg" class="d-block w-full h-56 sm:h-72 md:h-[500px] object-cover" alt="Image 3">
-                </div>  
-            </div>
-        </div>
-
         <script src="js/script.js"></script>
     </body>
 </html>

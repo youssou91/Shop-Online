@@ -222,6 +222,27 @@ class UserModel {
         }
     }
 
+    // Fonction pour récupérer les commandes d'un utilisateur avec leurs statuts
+    public function getUserCommandWithStatus($userId) {
+        // Préparer la requête SQL
+        $sql = "SELECT * FROM commande WHERE id_utilisateur = :userId";
+        
+        // Préparer la déclaration PDO
+        $stmt = $this->conn->prepare($sql);
+        
+        // Lier les paramètres
+        $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+        
+        // Exécuter la requête
+        $stmt->execute();
+        
+        // Récupérer les résultats
+        $commande = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return $commande;
+    }
+
+
 }
 
 ?>

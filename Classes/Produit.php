@@ -6,12 +6,11 @@ class Produit {
     private $courte_description;
     private $quantite;
     private $id_categorie;
-    private $taille_produit;
-    private $sexe_prod;
     private $couleurs_prod;
+    private $model;
     
     // Constructeur
-    public function __construct($nom, $prix_unitaire, $description, $courte_description, $quantite, $id_categorie, $couleurs_prod) {
+    public function __construct($nom, $prix_unitaire, $description, $courte_description, $quantite, $id_categorie, $couleurs_prod, $model) {
         $this->nom = $nom;
         $this->prix_unitaire = $prix_unitaire;
         $this->description = $description;
@@ -19,6 +18,7 @@ class Produit {
         $this->quantite = $quantite;
         $this->id_categorie = $id_categorie;
         $this->couleurs_prod = $couleurs_prod;
+        $this->model = $model;
     }
 
     // Getters
@@ -47,16 +47,12 @@ class Produit {
         return $this->id_categorie;
     }
 
-    public function getTailleProduit() {
-        return $this->taille_produit;
-    }
-
-    public function getSexeProd() {
-        return $this->sexe_prod;
-    }
-
     public function getCouleursProd() {
         return $this->couleurs_prod;
+    }
+
+    public function getModel() {
+        return $this->model;
     }
 
     // Setters
@@ -84,15 +80,11 @@ class Produit {
         $this->id_categorie = $id_categorie;
     }
 
-    public function setTailleProduit($taille_produit) {
-        $this->taille_produit = $taille_produit;
-    }
-
-    public function setSexeProd($sexe_prod) {
-        $this->sexe_prod = $sexe_prod;
-    }
-
     public function setCouleursProd($couleurs_prod) {
         $this->couleurs_prod = $couleurs_prod;
+    }
+    
+    public function setModel($model) {
+        $this->model = $model;
     }
 }

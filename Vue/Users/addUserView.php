@@ -1,20 +1,15 @@
 <?php
 // Inclure la configuration et la connexion à la base de données
 require_once '../../config.php';
+require_once '../../Controlleur/UserControlleur.php';
 
 // Créez une instance de connexion à la base de données
 $dbConnection = getConnection(); // Appel de la fonction getConnection() pour obtenir la connexion PDO
-
-// Inclure le contrôleur utilisateur
-require_once '../../Controlleur/UserControlleur.php';
-
 // Créez une instance du contrôleur avec la connexion à la base de données
 $userController = new UserController($dbConnection);
-
 // Variable pour stocker les messages
 $message = '';
 $messageType = '';
-
 // Si le formulaire est soumis
 // Si le formulaire est soumis
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
